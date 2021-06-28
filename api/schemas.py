@@ -3,11 +3,11 @@ import datetime as _dt
 import pydantic as _pydantic
 
 
-class _MessageBase(_pydantic.BaseModel):
+class _PostBase(_pydantic.BaseModel):
     text: str
 
 
-class Message(_MessageBase):
+class Post(_PostBase):
     id: int
     id_client: int
     date_created: _dt.datetime
@@ -18,11 +18,11 @@ class Message(_MessageBase):
         orm_mode = True
 
 
-class MessageCreate(_MessageBase):
+class PostCreate(_PostBase):
     pass
 
 
-class MessagePrediction(Message):
+class PostPrediction(Post):
     emotion: str
     positive: float
     neutral: float
@@ -43,7 +43,7 @@ class ClientCreate(_ClientBase):
 class Client(_ClientBase):
     id: int
 
-    # message: List[Message] = []
+    # post: List[post] = []
 
     class Config:
         orm_mode = True

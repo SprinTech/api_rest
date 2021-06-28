@@ -14,8 +14,7 @@ _services.create_database()
 # Create coach requests
 @app.post("/clients/")
 def create_client(client: _schemas.ClientCreate, db: _orm.Session = _fastapi.Depends(_services.get_db)):
-    _services.create_client(db=db, client=client)
-    return f"Client {client.last_name} {client.first_name} has been successfully added"
+    return _services.create_client(db=db, client=client)
 
 
 @app.delete("/clients/")
@@ -46,35 +45,43 @@ def update_client(
         client: _schemas._ClientBase,
         db: _orm.Session = _fastapi.Depends(_services.get_db),
 ):
-    is_in_list = _services.get_client(db=db, client_id=client_id)
+    is_in_list = _services.get_client(db=db, id=client_id)
     if is_in_list is None:
         raise _fastapi.HTTPException(
             status_code=404, detail="sorry this client does not exist"
         )
     else:
-        _services.update_client(db=db, id=client_id, client=client)
-        return f"Information about user with id {id} have been updated"
+        return _services.update_client(db=db, id=client_id, client=client)
 
 
-# Create message requests
+# Create post requests
 @app.post("/clients/{client_id}/post")
-def create_message(message: _schemas.MessageCreate, id_client: int,
-                   db: _orm.Session = _fastapi.Depends(_services.get_db)):
-    _services.create_message(db=db, id_client=id_client, message=message)
-    return f"Message has been successfully registered"
+def create_post(post: _schemas.PostCreate,
+                id_client: int,
+                db: _orm.Session = _fastapi.Depends(_services.get_db)
+                ):
+    return _services.create_post(db=db, id_client=id_client, post=post)
 
 
 @app.put("/post/{post_id}")
-def update_message(
-        post_id: int,
-        post: _schemas.Message,
-        db: _orm.Session = _fastapi.Depends(_services.get_db),
-):
-    is_in_list = _services.get_messages(db=db, message_id=post_id)
+def update_post(post: _schemas._PostBase,
+                id_client: int,
+                id_post: int,
+                db: _orm.Session = _fastapi.Depends(_services.get_db)):
+    is_in_list = _services.get_post(db=db, id_post=id_post)
     if is_in_list is None:
         raise _fastapi.HTTPException(
-            status_code=404, detail="sorry message you are looking for does not exist"
+            status_code=404, detail="sorry, you are looking for post that does not exist"
         )
     else:
-        _services.update_message(db=db, id=post_id, message=post)
-        return f"Message has been successfully updated"
+        return _services.update_post(db=db, id_post=id_post, post=post)
+
+
+@app.get("/clients/{client_id}/post")
+def read_post(
+        skip: int = 0,
+        limit: int = 10,
+        db: _orm.Session = _fastapi.Depends(_services.get_db),
+):
+    posts = _services.get_posts(db=db, skip=skip, limit=limit)
+    return posts

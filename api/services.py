@@ -11,6 +11,7 @@ def create_database():
 
 
 def get_db():
+    """Create connection to database"""
     db = _database.SessionLocal()
     try:
         yield db
@@ -20,6 +21,16 @@ def get_db():
 
 # Create some client functions
 def create_client(db: _orm.Session, client: _schemas.ClientCreate):
+    """Add new client to database
+
+    Parameters:
+        -> db: connection to SQL database
+        -> client: get scheme of client create function
+
+    Returns:
+        -> dic: User first name, last name, mail and phone
+
+    """
     db_user = _models.Client(first_name=client.first_name, last_name=client.last_name, mail=client.mail,
                              phone=client.phone)
     db.add(db_user)
@@ -29,20 +40,59 @@ def create_client(db: _orm.Session, client: _schemas.ClientCreate):
 
 
 def get_clients(db: _orm.Session, skip: int, limit: int):
+    """Get list of all clients stored in database
+
+    Parameters:
+        -> db: connection to SQL database
+        -> skip (int): number of element to skip from 0
+        -> limit (int): maximum number of element to return
+
+    Returns:
+        -> List of dic: Information about all client stored in database
+
+    """
     return db.query(_models.Client).offset(skip).limit(limit).all()
 
 
 def delete_client(db: _orm.Session, id: int):
+    """Delete client from database
+
+    Parameters:
+        -> db: connection to SQL database
+        -> id (int): client id
+
+    """
     db.query(_models.Client).filter(_models.Client.id == id).delete()
     db.commit()
 
 
-def get_client(db: _orm.Session, client_id: int):
-    return db.query(_models.Client).filter(_models.Client.id == client_id).first()
+def get_client(db: _orm.Session, id: int):
+    """Get information about a client
+
+    Parameters:
+        -> db: connection to SQL database
+        -> id (int): id of client
+
+    Returns:
+        -> Query: information about a client
+
+    """
+    return db.query(_models.Client).filter(_models.Client.id == id).first()
 
 
 def update_client(db: _orm.Session, id: int, client: _schemas._ClientBase):
-    db_client = get_client(db=db, client_id=id)
+    """Update information about a client stored in the database
+
+    Parameters:
+        -> db: connection to SQL database
+        -> id (int): id of client
+        -> client (class): information about a client
+
+    Returns:
+        -> List: information updated about a client
+
+    """
+    db_client = get_client(db=db, id=id)
     db_client.last_name = client.last_name
     db_client.first_name = client.first_name
     db_client.mail = client.mail
@@ -52,27 +102,57 @@ def update_client(db: _orm.Session, id: int, client: _schemas._ClientBase):
     return db_client
 
 
-# Create some message functions
+# Create some post functions
 def get_posts(db: _orm.Session, skip: int = 0, limit: int = 10):
-    return db.query(_models.Message).offset(skip).limit(limit).all()
+    """Get all posts stored in database
+
+    Parameters:
+        -> db: connection to SQL database
+        -> skip (int): number of element to skip from 0
+        -> limit (int): maximum number of element to return
+
+    Returns:
+        -> Query: Information about all posts stored in database
+
+    """
+    return db.query(_models.post).offset(skip).limit(limit).all()
 
 
-def create_message(db: _orm.Session, id_client: int, message: _schemas.MessageCreate):
-    db_message = _models.Message(text=message.text, id_client=id_client)
-    db.add(db_message)
+def create_post(db: _orm.Session, id_client: int, post: _schemas.PostCreate):
+    """Add new post to database
+
+    Parameters:
+        -> db: connection to SQL database
+        -> id_client (int): if of client
+        -> post (class): information about a post
+
+    Returns:
+        -> Dic:
+    """
+    db_post = _models.post(text=post.text, id_client=id_client)
+    db.add(db_post)
     db.commit()
-    db.refresh(db_message)
-    return db_message
+    db.refresh(db_post)
+    return db_post
 
 
-def get_post(db: _orm.Session, message_id: int):
-    return db.query(_models.Message).filter(_models.Message.id == message_id).first()
+def get_post(db: _orm.Session, id_post: int):
+    """Get all post written by a single client
+
+    Parameters:
+        -> db: connection to SQL database
+        -> id_post (int): id of post
+
+    Returns:
+        ->
+    """
+    return db.query(_models.post).filter(_models.post.id == id_post).first()
 
 
-def update_message(db: _orm.Session, id: int, message: _schemas.Message):
-    db_message = get_post(db=db, message_id=id)
-    db_message.text = message.text
-    db_message.date_last_updated = _dt.datetime.utcnow
+def update_post(db: _orm.Session, id_post: int, post: _schemas.Post):
+    db_post = get_post(db=db, id_post=id_post)
+    db_post.text = post.text
+    db_post.date_last_updated = _dt.datetime.utcnow()
     db.commit()
-    db.refresh(db_message)
-    return db_message
+    db.refresh(db_post)
+    return db_post
