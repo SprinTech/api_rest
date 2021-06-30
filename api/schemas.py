@@ -7,20 +7,19 @@ class _PostBase(_pydantic.BaseModel):
     text: str
 
 
+class PostCreate(_PostBase):
+    pass
+
+
 class Post(_PostBase):
     id: int
     id_client: int
-    date_created: _dt.datetime
-    date_last_updated: _dt.datetime
+    date_created: _dt.date
+    date_last_updated: _dt.date
     text: str
 
     class Config:
         orm_mode = True
-
-
-class PostCreate(_PostBase):
-    pass
-
 
 class PostPrediction(Post):
     emotion: str

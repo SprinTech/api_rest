@@ -14,12 +14,12 @@ class Client(_database.Base):
     phone = _sql.Column(_sql.String(length=10), unique=True, default="empty")
 
 
-class post(_database.Base):
+class Post(_database.Base):
     __tablename__ = "Post"
     id = _sql.Column(_sql.Integer, primary_key=True, index=True)
     id_client = _sql.Column(_sql.Integer, _sql.ForeignKey("Client.id"))
-    date_created = _sql.Column(_sql.DateTime, default=_dt.datetime.utcnow)
-    date_last_updated = _sql.Column(_sql.DateTime, default=_dt.datetime.utcnow)
+    date_created = _sql.Column(_sql.Date, default=_dt.datetime.utcnow)
+    date_last_updated = _sql.Column(_sql.Date, default=_dt.datetime.utcnow)
     text = _sql.Column(_sql.Text)
     sentiment = _sql.Column(_sql.String, default="empty")
     positive = _sql.Column(_sql.Float(), default="0")

@@ -103,7 +103,7 @@ def update_client(db: _orm.Session, id: int, client: _schemas._ClientBase):
 
 
 # Create some post functions
-def get_posts(db: _orm.Session, skip: int = 0, limit: int = 10):
+def get_post(db: _orm.Session, user_id: int):
     """Get all posts stored in database
 
     Parameters:
@@ -112,13 +112,13 @@ def get_posts(db: _orm.Session, skip: int = 0, limit: int = 10):
         -> limit (int): maximum number of element to return
 
     Returns:
-        -> Query: Information about all posts stored in database
+        -> Class instance: Information about all posts stored in database for range specified
 
     """
-    return db.query(_models.post).offset(skip).limit(limit).all()
+    return db.query(_models.Post).filter(_models.Post.id_client == user_id).order_by(_models.Post.date_last_updated.desc()).first()
 
 
-def create_post(db: _orm.Session, id_client: int, post: _schemas.PostCreate):
+def create_post(db: _orm.Session, post: _schemas.PostCreate, user_id: int):
     """Add new post to database
 
     Parameters:
@@ -127,16 +127,16 @@ def create_post(db: _orm.Session, id_client: int, post: _schemas.PostCreate):
         -> post (class): information about a post
 
     Returns:
-        -> Dic:
+        -> Class instance of post
     """
-    db_post = _models.post(text=post.text, id_client=id_client)
+    db_post = _models.Post(text=post.text, id_client=user_id)
     db.add(db_post)
     db.commit()
     db.refresh(db_post)
     return db_post
 
 
-def get_post(db: _orm.Session, id_post: int):
+def get_posts(db: _orm.Session, id_client: int):
     """Get all post written by a single client
 
     Parameters:
@@ -146,11 +146,11 @@ def get_post(db: _orm.Session, id_post: int):
     Returns:
         ->
     """
-    return db.query(_models.post).filter(_models.post.id == id_post).first()
+    return db.query(_models.Post).filter(_models.Post.id_client == id_client).all()
 
 
-def update_post(db: _orm.Session, id_post: int, post: _schemas.Post):
-    db_post = get_post(db=db, id_post=id_post)
+def update_post(db: _orm.Session, user_id: int, post: _schemas.PostCreate):
+    db_post = get_post(db=db, user_id=user_id)
     db_post.text = post.text
     db_post.date_last_updated = _dt.datetime.utcnow()
     db.commit()
