@@ -5,8 +5,11 @@ import api.database as _database
 import api.models as _models
 import api.schemas as _schemas
 
+from functions.text_prediction import ml_model, text_cleaning, enc
+
 
 def create_database():
+    """Create database files in api folder"""
     return _database.Base.metadata.create_all(bind=_database.engine)
 
 
@@ -24,11 +27,11 @@ def create_client(db: _orm.Session, client: _schemas.ClientCreate):
     """Add new client to database
 
     Parameters:
-        -> db: connection to SQL database
+        -> db: establish conversation with database
         -> client: get scheme of client create function
 
     Returns:
-        -> dic: User first name, last name, mail and phone
+        -> dictionary that contain client information : first name, last name, mail and phone
 
     """
     db_user = _models.Client(first_name=client.first_name, last_name=client.last_name, mail=client.mail,
@@ -43,22 +46,22 @@ def get_clients(db: _orm.Session, skip: int, limit: int):
     """Get list of all clients stored in database
 
     Parameters:
-        -> db: connection to SQL database
+        -> db: establish conversation with database
         -> skip (int): number of element to skip from 0
         -> limit (int): maximum number of element to return
 
     Returns:
-        -> List of dic: Information about all client stored in database
+        -> list of dictionary that display information about all clients stored in database
 
     """
     return db.query(_models.Client).offset(skip).limit(limit).all()
 
 
 def delete_client(db: _orm.Session, id: int):
-    """Delete client from database
+    """Delete existing client from database
 
     Parameters:
-        -> db: connection to SQL database
+        -> db: establish conversation with database
         -> id (int): client id
 
     """
@@ -70,11 +73,11 @@ def get_client(db: _orm.Session, id: int):
     """Get information about a client
 
     Parameters:
-        -> db: connection to SQL database
+        -> db: establish conversation with database
         -> id (int): id of client
 
     Returns:
-        -> Query: information about a client
+        -> Information about client that match with id
 
     """
     return db.query(_models.Client).filter(_models.Client.id == id).first()
@@ -84,12 +87,12 @@ def update_client(db: _orm.Session, id: int, client: _schemas._ClientBase):
     """Update information about a client stored in the database
 
     Parameters:
-        -> db: connection to SQL database
+        -> db: establish conversation with database
         -> id (int): id of client
         -> client (class): information about a client
 
     Returns:
-        -> List: information updated about a client
+        -> Information updated about a specified client
 
     """
     db_client = get_client(db=db, id=id)
@@ -104,32 +107,52 @@ def update_client(db: _orm.Session, id: int, client: _schemas._ClientBase):
 
 # Create some post functions
 def get_post(db: _orm.Session, user_id: int):
-    """Get all posts stored in database
+    """Get all posts written by clients.
 
     Parameters:
-        -> db: connection to SQL database
+        -> db: establish conversation with database
         -> skip (int): number of element to skip from 0
         -> limit (int): maximum number of element to return
 
     Returns:
-        -> Class instance: Information about all posts stored in database for range specified
+        -> Last post created by client
 
     """
-    return db.query(_models.Post).filter(_models.Post.id_client == user_id).order_by(_models.Post.date_last_updated.desc()).first()
+    return db.query(_models.Post).filter(_models.Post.id_client == user_id).order_by(
+        _models.Post.date_last_updated.desc()).first()
 
 
-def create_post(db: _orm.Session, post: _schemas.PostCreate, user_id: int):
+def get_all_posts(db: _orm.Session, skip: int, limit: int):
+    """Get list of all clients stored in database
+
+    Parameters:
+        -> db: establish conversation with database
+        -> skip (int): number of element to skip from 0
+        -> limit (int): maximum number of element to return
+
+    Returns:
+        -> list of dictionary that display information about all clients stored in database
+
+    """
+    return db.query(_models.Post).offset(skip).limit(limit).all()
+
+
+def create_post(db: _orm.Session, post: _schemas.PostCreate, user_id: int, sentiment: str, percent_anger: float,
+                percent_fear: float, percent_joy: float, percent_sadness: float):
     """Add new post to database
 
     Parameters:
-        -> db: connection to SQL database
+
+        -> db: establish conversation with database
         -> id_client (int): if of client
         -> post (class): information about a post
 
     Returns:
         -> Class instance of post
+
     """
-    db_post = _models.Post(text=post.text, id_client=user_id)
+    db_post = _models.Post(text=post.text, id_client=user_id, sentiment=sentiment, percent_anger=percent_anger,
+                           percent_fear=percent_fear, percent_joy=percent_joy, percent_sadness=percent_sadness)
     db.add(db_post)
     db.commit()
     db.refresh(db_post)
@@ -140,16 +163,28 @@ def get_posts(db: _orm.Session, id_client: int):
     """Get all post written by a single client
 
     Parameters:
-        -> db: connection to SQL database
+        -> db: establish conversation with database
         -> id_post (int): id of post
 
     Returns:
-        ->
+        -> All post filtered that match with specified id client
+
     """
     return db.query(_models.Post).filter(_models.Post.id_client == id_client).all()
 
 
 def update_post(db: _orm.Session, user_id: int, post: _schemas.PostCreate):
+    """Update post
+
+    Parameters:
+        -> db: establish conversation with database
+        -> user_id (int): id of user
+        -> post (class): information about a posts
+
+    Returns:
+        -> Class instance of post
+
+    """
     db_post = get_post(db=db, user_id=user_id)
     db_post.text = post.text
     db_post.date_last_updated = _dt.datetime.utcnow()

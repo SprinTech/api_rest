@@ -16,16 +16,17 @@ class Post(_PostBase):
     id_client: int
     date_created: _dt.date
     date_last_updated: _dt.date
-    text: str
 
     class Config:
         orm_mode = True
 
+
 class PostPrediction(Post):
-    emotion: str
-    positive: float
-    neutral: float
-    negative: float
+    sentiment: str
+    percent_joy: float
+    percent_fear: float
+    percent_anger: float
+    percent_sadness: float
 
 
 class _ClientBase(_pydantic.BaseModel):

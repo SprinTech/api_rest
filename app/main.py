@@ -1,16 +1,19 @@
 import datetime
 
 import pandas as pd
+import seaborn as sns
 import requests
 import streamlit as st
+
+st.set_option('deprecation.showPyplotGlobalUse', False)
 
 st.title('Personal diary API')
 
 # Create sidebar element
-user = st.sidebar.selectbox("Select type of user", ['Coach', 'Client', 'Sentiment analysis'])
+tab_choice = st.sidebar.selectbox("Select tab you want to consult", ['Coach', 'Client', 'Sentiment analysis'])
 
 # ------ ADD COACH ACTIONS -------- #
-if user == 'Coach':
+if tab_choice == 'Coach':
     coach_action = st.sidebar.selectbox("What do you want to do ?",
                                         ['Add new client', 'Delete client', 'Update client information',
                                          'Get client information', 'Get list of clients'])
@@ -54,8 +57,9 @@ if user == 'Coach':
         st.subheader('Update client information form')
 
         user_id = st.number_input(label="User ID", min_value=1, step=1)
+        submit_user_id = st.button(label="Submit")
 
-        if user_id:
+        if submit_user_id:
             with st.form(key='update_client_form'):
                 first_name = st.text_input(label='First name')
                 last_name = st.text_input(label='Last name')
@@ -94,7 +98,7 @@ if user == 'Coach':
             st.write(f'{k} : {v}')
 
 # ------ ADD CLIENT ACTIONS ------ #
-if user == 'Client':
+if tab_choice == 'Client':
     client_action = st.sidebar.selectbox("What do you want to do ?",
                                          ['Add new post', 'Update today post', 'Read posts'])
 
@@ -150,14 +154,26 @@ if user == 'Client':
                 st.dataframe(df)
 
 # ------ ADD SENTIMENT ANALYSIS PLOT ------ #
-if user == 'Sentiment analysis':
+if tab_choice == 'Sentiment analysis':
     sentiment_analysis_action = st.sidebar.selectbox("Which wheel of emotion do you want to check",
                                                      ['Global wheel of emotion', 'Individual wheel of emotion'])
 
     # Check global wheel of emotion
     if sentiment_analysis_action == 'Global wheel of emotion':
         st.markdown('------')
-        pass
+
+        start_date = st.date_input('Start date', datetime.date.today())
+        end_date = st.date_input('End date', datetime.date.today())
+
+        submit_button = st.button(label='Submit')
+
+        if submit_button:
+            res = requests.get("http://127.0.0.1:8000/clients/posts/")
+            df = pd.DataFrame(res.json())
+            df = df.loc[(df['date_created'] <= str(end_date)) & (df['date_created'] >= str(start_date))]
+            sns.countplot(x='sentiment', data=df)
+            st.subheader(f"Mood trend between the {start_date} and the {end_date}")
+            st.pyplot()
 
     # Check global wheel of emotion
     if sentiment_analysis_action == 'Individual wheel of emotion':
@@ -167,4 +183,15 @@ if user == 'Sentiment analysis':
         user_id = st.number_input(label="User ID", min_value=1, step=1)
 
         if user_id:
-            pass
+            start_date = st.date_input('Start date', datetime.date.today())
+            end_date = st.date_input('End date', datetime.date.today())
+
+            submit_button = st.button(label='Submit')
+
+            if submit_button:
+                res = requests.get(f'http://127.0.0.1:8000/clients/{user_id}/post/')
+                df = pd.DataFrame(res.json())
+                df = df.loc[(df['date_created'] <= str(end_date)) & (df['date_created'] >= str(start_date))]
+                sns.countplot(x='sentiment', data=df)
+                st.subheader(f"Mood trend for user {user_id} between the {start_date} and the {end_date}")
+                st.pyplot()
