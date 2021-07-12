@@ -17,3 +17,13 @@ Personal diary api using fastapi and streamlit.
 - NLTK
 - pandas
 - seaborn
+
+## File strucutre
+.
+└── my-project/
+    ├── src/
+    │   ├── index.html
+    │   └── my-project.scss
+    └── build/
+        ├── index.html
+        └── my-project.css
