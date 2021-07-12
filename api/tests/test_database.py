@@ -6,6 +6,7 @@ from api.main import app
 from api.services import get_db
 import pytest
 import datetime as dt
+import os
 
 # create test database
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -141,5 +142,7 @@ def test_update_post():
         json={"text": "Weather is so sad ..."}
     )
     data = response.json()
-    assert data['text'] == "I'm feeling happy today !"
+    assert data['text'] == "Weather is so sad ..."
     assert data['date_last_updated'] == dt.datetime.today().strftime('%Y-%m-%d')
+
+

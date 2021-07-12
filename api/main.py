@@ -186,8 +186,6 @@ def update_post(post: _schemas.PostCreate,
                                      percent_anger=probas[0][0], percent_fear=probas[0][1],
                                      percent_joy=probas[0][2], percent_sadness=probas[0][3])
 
-        # return _services.update_post(db=db, user_id=user_id, post=post)
-
 
 @app.get("/clients/{user_id}/post/", response_model=List[_schemas.PostPrediction])
 def read_post(
