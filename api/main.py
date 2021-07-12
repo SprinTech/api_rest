@@ -8,7 +8,8 @@ import api.services as _services
 
 app = _fastapi.FastAPI()
 
-_services.create_database()
+if __name__ == "__main__":
+    _services.create_database()
 
 
 # ----- CREATE COACH REQUESTS ----- #
@@ -169,7 +170,23 @@ def update_post(post: _schemas.PostCreate,
             status_code=404, detail="sorry, you are looking for post that does not exist"
         )
     else:
-        return _services.update_post(db=db, user_id=user_id, post=post)
+        # clean the review
+        cleaned_post = text_cleaning(post.text)
+        enc_text = enc.transform([cleaned_post])
+
+        # perform prediction
+        prediction = ml_model.predict(enc_text)
+        output = int(prediction[0])
+        probas = ml_model.predict_proba(enc_text)
+
+        # output dictionary
+        sentiments = {0: "Anger", 1: "Fear", 2: "Joy", 3: "Sadness"}
+
+        return _services.update_post(db=db, post=post, user_id=user_id, sentiment=sentiments[output],
+                                     percent_anger=probas[0][0], percent_fear=probas[0][1],
+                                     percent_joy=probas[0][2], percent_sadness=probas[0][3])
+
+        # return _services.update_post(db=db, user_id=user_id, post=post)
 
 
 @app.get("/clients/{user_id}/post/", response_model=List[_schemas.PostPrediction])

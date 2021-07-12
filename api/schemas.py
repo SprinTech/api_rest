@@ -43,7 +43,5 @@ class ClientCreate(_ClientBase):
 class Client(_ClientBase):
     id: int
 
-    # post: List[post] = []
-
     class Config:
         orm_mode = True

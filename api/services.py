@@ -5,8 +5,6 @@ import api.database as _database
 import api.models as _models
 import api.schemas as _schemas
 
-from functions.text_prediction import ml_model, text_cleaning, enc
-
 
 def create_database():
     """Create database files in api folder"""
@@ -173,7 +171,8 @@ def get_posts(db: _orm.Session, id_client: int):
     return db.query(_models.Post).filter(_models.Post.id_client == id_client).all()
 
 
-def update_post(db: _orm.Session, user_id: int, post: _schemas.PostCreate):
+def update_post(db: _orm.Session, post: _schemas.PostCreate, user_id: int, sentiment: str, percent_anger: float,
+                percent_fear: float, percent_joy: float, percent_sadness: float):
     """Update post
 
     Parameters:
@@ -187,6 +186,11 @@ def update_post(db: _orm.Session, user_id: int, post: _schemas.PostCreate):
     """
     db_post = get_post(db=db, user_id=user_id)
     db_post.text = post.text
+    db_post.sentiment = sentiment
+    db_post.percent_joy = percent_joy
+    db_post.percent_fear = percent_fear
+    db_post.percent_anger = percent_anger
+    db_post.percent_sadness = percent_sadness
     db_post.date_last_updated = _dt.datetime.utcnow()
     db.commit()
     db.refresh(db_post)
