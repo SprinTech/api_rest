@@ -12,6 +12,12 @@ Project is created with:
 * sqlalchemy: 1.4.15
 * pydantic: 1.8.2
 * streamlit: 0.84.0
+* pytest: 6.2.4
+* pandas: 1.2.5
+* seaborn: 0.11.1
+* requests: 2.25.1
+* joblib: 1.0.1
+* nltk~: 3.6.2
 
 ## File structure
 ```bash
